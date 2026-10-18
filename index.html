@@ -23,7 +23,7 @@ a{color:#93c5fd} .warning{color:#fde68a}
 </head>
 <body><main>
 <h1>BTC ULTRA SCALPER</h1>
-<div class="sub">CoinDCX Futures · BTC/USDT · 5-minute signals · Mobile web app</div>
+<div class="sub">Binance BTC/USDT market data · 5-minute signals · Mobile web app</div>
 <section class="card">
  <div class="row"><div><div class="label">છેલ્લો ઉપલબ્ધ ભાવ (USDT)</div><div class="price" id="price">—</div></div><div class="pill wait" id="signal">ડેટા લોડ થાય છે…</div></div>
  <div class="status" id="updated">જાહેર માર્કેટ ડેટા લોડ કરી રહ્યા છીએ…</div>
@@ -55,11 +55,12 @@ a{color:#93c5fd} .warning{color:#fde68a}
  <strong>આ સિસ્ટમ કેવી રીતે સિગ્નલ આપે છે?</strong>
  <p class="note">BUY માટે EMA 9 > EMA 21, RSI ≥ 55 અને MACD line > signal line. SELL માટે EMA 9 < EMA 21, RSI ≤ 45 અને MACD line < signal line. આ સરળ ફિલ્ટર છે—દરેક સિગ્નલ નફાકારક નહીં હોય અને sideways marketમાં ખોટા સિગ્નલ આવી શકે.</p>
  <p class="note warning">મહત્ત્વપૂર્ણ: આ ફક્ત સિગ્નલ/શૈક્ષણિક ટૂલ છે. CoinDCXમાં ઓર્ડર આપતું નથી. API key/secretની જરૂર નથી. પહેલાં paper trading કરો; 5x–7x leverageથી નુકસાન ઝડપથી વધી શકે છે.</p>
- <p class="note">જો ડેટા ન આવે, તો તમારા બ્રાઉઝરમાં જાહેર API request/CORS બ્લોક હોઈ શકે. આ ફાઇલને Chromeમાં ખોલીને ફરી પ્રયાસ કરો. ડેટા CoinDCX જાહેર Futures API પરથી આવે છે.</p>
+ <p class="note">જો ડેટા ન આવે, તો Binance API તમારા નેટવર્ક/પ્રદેશમાં બ્લોક હોઈ શકે. Futures API પહેલાં અજમાય છે; નિષ્ફળ થાય તો Spot API fallback થાય છે, જેના ભાવ Futuresથી થોડા અલગ હોઈ શકે.</p>
 </section>
 </main>
 <script>
-const API='https://public.coindcx.com/market_data/candlesticks';
+const FUTURES_API='https://fapi.binance.com/fapi/v1/klines';
+const SPOT_API='https://api.binance.com/api/v3/klines';
 const $=id=>document.getElementById(id);
 function ema(values,period){let k=2/(period+1),out=[],prev=values[0];out.push(prev);for(let i=1;i<values.length;i++){prev=values[i]*k+prev*(1-k);out.push(prev)}return out}
 function rsi(values,n=14){let out=Array(values.length).fill(null);if(values.length<=n)return out;let gain=0,loss=0;for(let i=1;i<=n;i++){let d=values[i]-values[i-1];gain+=Math.max(d,0);loss+=Math.max(-d,0)}let ag=gain/n,al=loss/n;out[n]=al===0?100:100-100/(1+ag/al);for(let i=n+1;i<values.length;i++){let d=values[i]-values[i-1];ag=(ag*(n-1)+Math.max(d,0))/n;al=(al*(n-1)+Math.max(-d,0))/n;out[i]=al===0?100:100-100/(1+ag/al)}return out}
@@ -68,11 +69,24 @@ function fmt(v){return Number.isFinite(v)?v.toLocaleString('en-US',{minimumFract
 async function load(){
  $('refresh').disabled=true;$('updated').textContent='ડેટા લોડ થઈ રહ્યો છે…';
  try{
-  const now=Math.floor(Date.now()/1000),from=now-60*60*24;
-  const url=`${API}?pair=B-BTC_USDT&from=${from}&to=${now}&resolution=5&pcode=f`;
-  const res=await fetch(url,{cache:'no-store'});if(!res.ok)throw new Error('API HTTP '+res.status);
-  const json=await res.json();const candles=(json.data||json).map(c=>({time:Number(c.time),open:+c.open,high:+c.high,low:+c.low,close:+c.close,volume:+c.volume})).filter(c=>Number.isFinite(c.close)).sort((a,b)=>a.time-b.time);
-  if(candles.length<35)throw new Error('પૂરતી candles મળી નથી');
+  let candles=[],source='Binance Futures';
+  const endpoints=[
+    {url:`${FUTURES_API}?symbol=BTCUSDT&interval=5m&limit=288`,name:'Binance Futures'},
+    {url:`${SPOT_API}?symbol=BTCUSDT&interval=5m&limit=288`,name:'Binance Spot fallback'}
+  ];
+  let lastError='કોઈ API જવાબ આપતું નથી';
+  for(const endpoint of endpoints){
+    try{
+      const res=await fetch(endpoint.url,{cache:'no-store'});
+      if(!res.ok)throw new Error('HTTP '+res.status);
+      const rows=await res.json();
+      const parsed=rows.map(k=>({time:Number(k[0]),open:+k[1],high:+k[2],low:+k[3],close:+k[4],volume:+k[5]}))
+        .filter(c=>Number.isFinite(c.close)&&c.close>0).sort((a,b)=>a.time-b.time);
+      if(parsed.length>=35){candles=parsed;source=endpoint.name;break;}
+      throw new Error('પૂરતી candles મળી નથી');
+    }catch(err){lastError=err.message;}
+  }
+  if(candles.length<35)throw new Error('Binance ડેટા લોડ ન થયો ('+lastError+'). નેટવર્ક/પ્રદેશની મર્યાદા હોઈ શકે.');
   // Ignore the currently forming candle to avoid unstable intrabar signals.
   const closed=candles.filter(c=>c.time+5*60*1000<Date.now());
   const cs=closed.length?closed:candles;const closes=cs.map(c=>c.close),last=cs.length-1;
@@ -85,7 +99,7 @@ async function load(){
   $('reason').textContent=isBuy?'EMA bullish, RSI ≥ 55 અને MACD confirmation. એન્ટ્રી પહેલાં candle/market ફરી તપાસો.':isSell?'EMA bearish, RSI ≤ 45 અને MACD confirmation. એન્ટ્રી પહેલાં candle/market ફરી તપાસો.':'બધી શરતો એકસાથે મેળ ખાતી નથી; રાહ જુઓ. આનો અર્થ ટ્રેડ લેવાનો નથી.';
   for(const id of ['entry','sl','t1','t2','t3'])$(id).textContent='—';
   if(isBuy||isSell){const risk=Math.max(a*1.5,price*0.001);$('entry').textContent=fmt(price);$('sl').textContent=fmt(price+(isBuy?-risk:risk));$('t1').textContent=fmt(price+(isBuy?risk:-risk));$('t2').textContent=fmt(price+(isBuy?2*risk:-2*risk));$('t3').textContent=fmt(price+(isBuy?3*risk:-3*risk))}
-  $('updated').textContent=`છેલ્લું અપડેટ: ${new Date().toLocaleString()} · ${cs.length} candles`;
+  $('updated').textContent=`છેલ્લું અપડેટ: ${new Date().toLocaleString()} · ${cs.length} candles · ${source}`;
  }catch(e){$('signal').className='pill wait';$('signal').textContent='ડેટા ઉપલબ્ધ નથી';$('updated').textContent='લોડ નિષ્ફળ: '+e.message+' — ઇન્ટરનેટ/બ્રાઉઝર પર ફરી પ્રયાસ કરો.';$('reason').textContent='લાઇવ ડેટા ન મળતાં સિગ્નલ ગણવામાં આવ્યો નથી.'}
  finally{$('refresh').disabled=false}
 }
