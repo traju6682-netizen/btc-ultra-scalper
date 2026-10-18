@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="gu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BTC Scalper Signals</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--card:#151d31;--muted:#9eabc5;--line:#2b3650;--green:#22c55e;--red:#ef4444;--gold:#fbbf24;--blue:#60a5fa}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#eef3ff;font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:680px;margin:auto;padding:16px}
+h1{font-size:1.35rem;margin:4px 0 6px}.sub{color:var(--muted);font-size:.9rem;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;margin:12px 0}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:center}.price{font-size:1.8rem;font-weight:800;letter-spacing:-.5px}
+.pill{padding:7px 11px;border-radius:999px;font-weight:800;font-size:.85rem;background:#334155}
+.buy{background:#123e2b;color:#86efac}.sell{background:#4a1d26;color:#fecaca}.wait{background:#3c3216;color:#fde68a}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.metric{background:#0e1628;border-radius:12px;padding:11px}.label{font-size:.78rem;color:var(--muted)}.value{font-size:1rem;font-weight:700;margin-top:5px}
+.targets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.target{border:1px solid var(--line);border-radius:10px;padding:10px}
+button{border:0;border-radius:12px;background:#2563eb;color:white;font-size:1rem;font-weight:700;padding:13px 16px;width:100%;margin-top:8px}
+small,.note{color:var(--muted);font-size:.82rem;line-height:1.5}.status{font-size:.82rem;color:var(--muted);margin-top:10px}.bar{height:1px;background:var(--line);margin:12px 0}
+a{color:#93c5fd} .warning{color:#fde68a}
+@media(min-width:520px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.targets{grid-template-columns:repeat(4,minmax(0,1fr))}}
+</style>
+</head>
+<body><main>
+<h1>BTC ULTRA SCALPER</h1>
+<div class="sub">CoinDCX Futures · BTC/USDT · 5-minute signals · Mobile web app</div>
+<section class="card">
+ <div class="row"><div><div class="label">છેલ્લો ઉપલબ્ધ ભાવ (USDT)</div><div class="price" id="price">—</div></div><div class="pill wait" id="signal">ડેટા લોડ થાય છે…</div></div>
+ <div class="status" id="updated">જાહેર માર્કેટ ડેટા લોડ કરી રહ્યા છીએ…</div>
+ <button id="refresh">હમણાં રિફ્રેશ કરો</button>
+</section>
+<section class="card">
+ <div class="row"><strong>ટ્રેન્ડ કન્ફર્મેશન</strong><span class="label">બંધ થયેલી 5m candles</span></div>
+ <div class="bar"></div>
+ <div class="grid">
+  <div class="metric"><div class="label">EMA 9</div><div class="value" id="ema9">—</div></div>
+  <div class="metric"><div class="label">EMA 21</div><div class="value" id="ema21">—</div></div>
+  <div class="metric"><div class="label">RSI 14</div><div class="value" id="rsi">—</div></div>
+  <div class="metric"><div class="label">MACD</div><div class="value" id="macd">—</div></div>
+ </div>
+ <p class="note" id="reason">સિગ્નલ માટે ડેટાની રાહ જોઈ રહ્યા છીએ.</p>
+</section>
+<section class="card">
+ <strong>સંભવિત Entry, Stop Loss અને Targets</strong>
+ <p class="note">SL/Targets ATR આધારિત અંદાજ છે. સિગ્નલ ન હોય ત્યારે ભાવો બતાવવામાં નહીં આવે.</p>
+ <div class="targets">
+  <div class="target"><div class="label">Entry</div><div class="value" id="entry">—</div></div>
+  <div class="target"><div class="label">Stop Loss</div><div class="value" id="sl">—</div></div>
+  <div class="target"><div class="label">Target 1 (1R)</div><div class="value" id="t1">—</div></div>
+  <div class="target"><div class="label">Target 2 (2R)</div><div class="value" id="t2">—</div></div>
+  <div class="target"><div class="label">Target 3 (3R)</div><div class="value" id="t3">—</div></div>
+ </div>
+</section>
+<section class="card">
+ <strong>આ સિસ્ટમ કેવી રીતે સિગ્નલ આપે છે?</strong>
+ <p class="note">BUY માટે EMA 9 > EMA 21, RSI ≥ 55 અને MACD line > signal line. SELL માટે EMA 9 < EMA 21, RSI ≤ 45 અને MACD line < signal line. આ સરળ ફિલ્ટર છે—દરેક સિગ્નલ નફાકારક નહીં હોય અને sideways marketમાં ખોટા સિગ્નલ આવી શકે.</p>
+ <p class="note warning">મહત્ત્વપૂર્ણ: આ ફક્ત સિગ્નલ/શૈક્ષણિક ટૂલ છે. CoinDCXમાં ઓર્ડર આપતું નથી. API key/secretની જરૂર નથી. પહેલાં paper trading કરો; 5x–7x leverageથી નુકસાન ઝડપથી વધી શકે છે.</p>
+ <p class="note">જો ડેટા ન આવે, તો તમારા બ્રાઉઝરમાં જાહેર API request/CORS બ્લોક હોઈ શકે. આ ફાઇલને Chromeમાં ખોલીને ફરી પ્રયાસ કરો. ડેટા CoinDCX જાહેર Futures API પરથી આવે છે.</p>
+</section>
+</main>
+<script>
+const API='https://public.coindcx.com/market_data/candlesticks';
+const $=id=>document.getElementById(id);
+function ema(values,period){let k=2/(period+1),out=[],prev=values[0];out.push(prev);for(let i=1;i<values.length;i++){prev=values[i]*k+prev*(1-k);out.push(prev)}return out}
+function rsi(values,n=14){let out=Array(values.length).fill(null);if(values.length<=n)return out;let gain=0,loss=0;for(let i=1;i<=n;i++){let d=values[i]-values[i-1];gain+=Math.max(d,0);loss+=Math.max(-d,0)}let ag=gain/n,al=loss/n;out[n]=al===0?100:100-100/(1+ag/al);for(let i=n+1;i<values.length;i++){let d=values[i]-values[i-1];ag=(ag*(n-1)+Math.max(d,0))/n;al=(al*(n-1)+Math.max(-d,0))/n;out[i]=al===0?100:100-100/(1+ag/al)}return out}
+function atr(candles,n=14){let tr=[];for(let i=0;i<candles.length;i++){let c=candles[i],prev=i?candles[i-1].close:c.close;tr.push(Math.max(c.high-c.low,Math.abs(c.high-prev),Math.abs(c.low-prev)))}return ema(tr,n)}
+function fmt(v){return Number.isFinite(v)?v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):'—'}
+async function load(){
+ $('refresh').disabled=true;$('updated').textContent='ડેટા લોડ થઈ રહ્યો છે…';
+ try{
+  const now=Math.floor(Date.now()/1000),from=now-60*60*24;
+  const url=`${API}?pair=B-BTC_USDT&from=${from}&to=${now}&resolution=5&pcode=f`;
+  const res=await fetch(url,{cache:'no-store'});if(!res.ok)throw new Error('API HTTP '+res.status);
+  const json=await res.json();const candles=(json.data||json).map(c=>({time:Number(c.time),open:+c.open,high:+c.high,low:+c.low,close:+c.close,volume:+c.volume})).filter(c=>Number.isFinite(c.close)).sort((a,b)=>a.time-b.time);
+  if(candles.length<35)throw new Error('પૂરતી candles મળી નથી');
+  // Ignore the currently forming candle to avoid unstable intrabar signals.
+  const closed=candles.filter(c=>c.time+5*60*1000<Date.now());
+  const cs=closed.length?closed:candles;const closes=cs.map(c=>c.close),last=cs.length-1;
+  const e9=ema(closes,9),e21=ema(closes,21),rv=rsi(closes,14),m12=ema(closes,12),m26=ema(closes,26),ml=m12.map((v,i)=>v-m26[i]),ms=ema(ml,9),av=atr(cs,14);
+  const price=closes[last],r=rv[last],mac=ml[last],sig=ms[last],a=av[last];
+  $('price').textContent=fmt(price);$('ema9').textContent=fmt(e9[last]);$('ema21').textContent=fmt(e21[last]);$('rsi').textContent=fmt(r);$('macd').textContent=fmt(mac);
+  const isBuy=e9[last]>e21[last]&&r>=55&&mac>sig;
+  const isSell=e9[last]<e21[last]&&r<=45&&mac<sig;
+  const pill=$('signal');pill.className='pill '+(isBuy?'buy':isSell?'sell':'wait');pill.textContent=isBuy?'BUY સંકેત':isSell?'SELL સંકેત':'WAIT';
+  $('reason').textContent=isBuy?'EMA bullish, RSI ≥ 55 અને MACD confirmation. એન્ટ્રી પહેલાં candle/market ફરી તપાસો.':isSell?'EMA bearish, RSI ≤ 45 અને MACD confirmation. એન્ટ્રી પહેલાં candle/market ફરી તપાસો.':'બધી શરતો એકસાથે મેળ ખાતી નથી; રાહ જુઓ. આનો અર્થ ટ્રેડ લેવાનો નથી.';
+  for(const id of ['entry','sl','t1','t2','t3'])$(id).textContent='—';
+  if(isBuy||isSell){const risk=Math.max(a*1.5,price*0.001);$('entry').textContent=fmt(price);$('sl').textContent=fmt(price+(isBuy?-risk:risk));$('t1').textContent=fmt(price+(isBuy?risk:-risk));$('t2').textContent=fmt(price+(isBuy?2*risk:-2*risk));$('t3').textContent=fmt(price+(isBuy?3*risk:-3*risk))}
+  $('updated').textContent=`છેલ્લું અપડેટ: ${new Date().toLocaleString()} · ${cs.length} candles`;
+ }catch(e){$('signal').className='pill wait';$('signal').textContent='ડેટા ઉપલબ્ધ નથી';$('updated').textContent='લોડ નિષ્ફળ: '+e.message+' — ઇન્ટરનેટ/બ્રાઉઝર પર ફરી પ્રયાસ કરો.';$('reason').textContent='લાઇવ ડેટા ન મળતાં સિગ્નલ ગણવામાં આવ્યો નથી.'}
+ finally{$('refresh').disabled=false}
+}
+$('refresh').addEventListener('click',load);load();setInterval(load,60000);
+</script>
+</body></html>
